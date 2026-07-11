@@ -355,15 +355,27 @@ button.primary-btn:active { transform: scale(0.99); }
 </head>
 
 <body>
-<!-- ဒီကုဒ်လေးကို tabs-container ရဲ့ အပေါ်မှာ ထည့်ပေးပါ -->
-<div class="card" id="loginCard" style="margin-bottom: 12px; border-left: 5px solid #2563eb;">
-    <h3 style="text-align: left; font-size: 14px; margin-bottom: 8px;">👤 Rider Profile သတ်မှတ်ရန်</h3>
-    <div style="display: flex; gap: 6px;">
-        <input type="text" id="riderNameInput" placeholder="Rider နာမည် ရိုက်ထည့်ပါ... (ဥပမာ - မောင်မောင်)" style="padding: 8px;">
-        <button onclick="saveRiderProfile()" style="background: #2563eb; color: white; border: none; padding: 0 16px; border-radius: 8px; font-weight: bold; font-size: 12px; cursor: pointer; white-space: nowrap;">သိမ်းမည်</button>
-    </div>
-    <p id="currentRiderText" style="margin: 6px 0 0 0; font-size: 11px; color: #64748b; font-weight: bold; display: none;"></p>
+<!-- Tabs အပေါ်မှာ ဒါလေးပဲ အစားထိုး ထည့်ပေးရပါမယ် -->
+<div style="display: flex; justify-content: flex-end; margin-bottom: 8px; padding-right: 4px;">
+    <button onclick="toggleLoginModal()" id="riderStatusBtn" style="background: #e2e8f0; color: #475569; border: 1px solid #cbd5e1; padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+        👤 Rider သတ်မှတ်ရန်
+    </button>
 </div>
+
+<!-- နာမည်ရိုက်ရန် Popup Box (ပုံမှန်အချိန်တွင် ပုန်းနေမည်) -->
+<div id="loginModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 9999; align-items: center; justify-content: center; padding: 16px;">
+    <div class="card" style="width: 100%; max-width: 340px; margin-bottom: 0; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+        <h3 style="text-align: left; font-size: 14px; margin-top: 0;">👤 Rider Profile သတ်မှတ်ရန်</h3>
+        <div class="form-group">
+            <input type="text" id="riderNameInput" placeholder="Rider နာမည် ရိုက်ထည့်ပါ...">
+            <div style="display: flex; gap: 6px; margin-top: 4px;">
+                <button onclick="toggleLoginModal()" style="flex: 1; background: #94a3b8; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; font-size: 13px; cursor: pointer;">ပိတ်မည်</button>
+                <button onclick="saveRiderProfile()" style="flex: 1; background: #2563eb; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; font-size: 13px; cursor: pointer;">သိမ်းမည်</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 <div class="container">
 
@@ -965,29 +977,43 @@ function importSystemData(event) {
     };
     reader.readAsText(file); event.target.value = ""; 
 }
-// Rider Profile သိမ်းဆည်းရန် နှင့် ပြသရန် Logic
+// Popup ကို ပိတ်/ဖွင့် လုပ်ပေးမည့် Function
+function toggleLoginModal() {
+    const modal = document.getElementById("loginModal");
+    modal.style.display = (modal.style.display === "none" || modal.style.display === "") ? "flex" : "none";
+}
+
+// Profile ရှိမရှိ စစ်ဆေးပြီး ခလုတ်စာသားကို Update လုပ်ပေးမည့် Function
+function checkRiderProfile() {
+    let savedName = localStorage.getItem("rider_profile_name");
+    let btnEl = document.getElementById("riderStatusBtn");
+    let inputEl = document.getElementById("riderNameInput");
+    
+    if (savedName) {
+        inputEl.value = savedName;
+        // နာမည်ရှိရင် ခလုတ်လေးက အစိမ်းရောင်ပြောင်းပြီး Rider နာမည်လေး ပြနေပါလိမ့်မယ်
+        btnEl.innerHTML = `🟢 Rider: <b>${savedName}</b>`;
+        btnEl.style.background = "#d1fae5";
+        btnEl.style.color = "#065f46";
+        btnEl.style.borderColor = "#a7f3d0";
+    } else {
+        btnEl.innerHTML = `👤 Rider သတ်မှတ်ရန်`;
+        btnEl.style.background = "#e2e8f0";
+        btnEl.style.color = "#475569";
+        btnEl.style.borderColor = "#cbd5e1";
+    }
+}
+
+// မူလ saveRiderProfile ကိုလည်း Popup ပိတ်သွားအောင် နည်းနည်းမွမ်းမံခြင်း
 function saveRiderProfile() {
     let nameInput = document.getElementById("riderNameInput").value.trim();
     if (!nameInput) return alert("Rider နာမည် ရိုက်ထည့်ပေးပါဦးဗျာ။");
     
     localStorage.setItem("rider_profile_name", nameInput);
     checkRiderProfile();
-    alert(`Rider: ${nameInput} အဖြစ် သတ်မှတ်ပြီးပါပြီ။`);
+    toggleLoginModal(); // နာမည်သိမ်းပြီးရင် Popup ကို Auto ပိတ်ပေးတာပါ
 }
 
-function checkRiderProfile() {
-    let savedName = localStorage.getItem("rider_profile_name");
-    let textEl = document.getElementById("currentRiderText");
-    let inputEl = document.getElementById("riderNameInput");
-    
-    if (savedName) {
-        inputEl.value = savedName;
-        textEl.innerText = `လက်ရှိအသုံးပြုသူ - Rider: ${savedName}`;
-        textEl.style.display = "block";
-    } else {
-        textEl.style.display = "none";
-    }
-}
 
 // မူလ renderSlip Function ကို Rider Name ပြသနိုင်အောင် မွမ်းမံခြင်း
 // အစ်ကို့ရဲ့ renderSlip() နေရာမှာ ဒါလေး အစားထိုးပေးပါ (Title အောက်မှာ Rider Name ပေါ်လာမှာပါ)
