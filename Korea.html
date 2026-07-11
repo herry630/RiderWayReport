@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Rider Daily Log & Slip Pro</title>
+
+<!-- html2canvas v1.4.1 (Offline-Safe Embeded via Base64 Mini-Fallback inside logic if network fails) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<style>
+* { box-sizing: border-box; font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif; }
+
+body {
+    background: #f1f5f9;
+    margin: 0;
+    padding: 8px;
+    color: #334155;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.container {
+    max-width: 680px;
+    margin: auto;
+}
+
+.card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 14px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    margin-bottom: 14px;
+}
+
+h2, h3 { text-align: center; margin: 4px 0 12px 0; color: #0f172a; font-size: 18px; }
+
+/* TABS STYLING */
+.tabs-container {
+    display: flex;
+    background: #e2e8f0;
+    border-radius: 10px;
+    padding: 3px;
+    margin-bottom: 12px;
+    gap: 2px;
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 10px 2px;
+    border: none;
+    background: transparent;
+    color: #64748b;
+    font-weight: bold;
+    font-size: 12px;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.2s;
+    text-align: center;
+}
+
+.tab-btn.active {
+    background: #fff;
+    color: #2563eb;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* FILTERS */
+.filter-container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+    margin-bottom: 10px;
+}
+.filter-btn, .shop-filter-btn {
+    padding: 8px 2px;
+    font-size: 11px;
+    background: #f8fafc;
+    color: #475569;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    text-align: center;
+}
+.filter-btn.active { background: #2563eb; color: white; border-color: #2563eb; }
+.shop-filter-btn.active { background: #10b981; color: white; border-color: #10b981; }
+
+.shop-filter-container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+    margin-bottom: 10px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.row-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+}
+
+label {
+    font-size: 11px;
+    font-weight: bold;
+    color: #475569;
+}
+
+input, select, textarea {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+    font-size: 14px;
+    background: #f8fafc;
+    color: #0f172a;
+}
+
+input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: #2563eb;
+    background: #fff;
+}
+
+button.primary-btn {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: none;
+    background: #2563eb;
+    color: white;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 6px;
+}
+button.primary-btn:active { transform: scale(0.99); }
+
+/* TABLES */
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    margin-top: 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: #fff;
+}
+
+.log-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+    white-space: nowrap;
+}
+
+.log-table th {
+    background: #f1f5f9;
+    color: #475569;
+    font-weight: bold;
+    padding: 8px 6px;
+    border-bottom: 1px solid #cbd5e1;
+}
+
+.log-table td {
+    padding: 8px 6px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #334155;
+}
+
+.log-table tfoot tr {
+    border-top: 2px solid #cbd5e1;
+    font-weight: bold;
+    background: #f8fafc;
+}
+
+.delete-btn {
+    width: 22px;
+    height: 22px;
+    background: #fee2e2;
+    color: #ef4444;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+/* SLIP STYLING - OPTIMIZED FOR MOBILE SCREENSHOTS */
+.slip-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    background: #e2e8f0;
+    padding: 8px;
+    border-radius: 8px;
+}
+
+#voucher {
+    background: #fff;
+    padding: 16px 12px;
+    border-radius: 4px;
+    width: 100%;
+    min-width: 580px;
+    margin: auto;
+}
+
+.v-title { text-align: center; font-size: 18px; font-weight: 800; color: #0f172a; margin: 0; }
+.v-date { text-align: center; font-size: 11px; color: #64748b; margin: 2px 0 12px 0; font-weight: bold; }
+
+.voucher-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+}
+.voucher-table th {
+    border-bottom: 1px dashed #64748b;
+    padding: 6px 2px;
+    color: #334155;
+    background: #f8fafc;
+}
+.voucher-table td {
+    padding: 8px 2px;
+    border-bottom: 1px dashed #f1f5f9;
+}
+.voucher-table tfoot tr {
+    border-top: 1px dashed #0f172a;
+    border-bottom: 1px solid #0f172a;
+    font-weight: bold;
+    background: #f8fafc;
+}
+
+.toggle-container {
+    background: #f8fafc;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: bold;
+    color: #475569;
+    cursor: pointer;
+    margin-bottom: 8px;
+}
+.toggle-container input { width: 16px; height: 16px; margin: 0; }
+
+.slip-remove-btn {
+    background: #ffedd5;
+    color: #ea580c;
+    border: 1px solid #fed7aa;
+    padding: 2px 4px;
+    font-size: 10px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 10px;
+}
+
+#previewContainer {
+    margin-top: 14px;
+    background: #cbd5e1;
+    padding: 8px;
+    border-radius: 8px;
+    text-align: center;
+}
+#previewContainer img {
+    max-width: 100%;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.backup-zone {
+    margin-top: 16px;
+    padding: 12px;
+    background: #f8fafc;
+    border: 2px dashed #cbd5e1;
+    border-radius: 8px;
+}
+.backup-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+}
+.btn-backup { background: #475569; color: white; padding: 10px; font-size: 12px; border-radius: 6px; border:none; font-weight:bold;}
+.btn-restore { background: #0f172a; color: white; padding: 10px; font-size: 12px; border-radius: 6px; border:none; font-weight:bold;}
+
+.shop-badges {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 6px;
+    margin-top: 6px;
+    max-height: 260px;
+    overflow-y: auto;
+    padding: 6px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: #fff;
+}
+.shop-badge {
+    background: #f1f5f9;
+    padding: 6px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid #e2e8f0;
+}
+.shop-badge .shop-info {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+.shop-badge .shop-type-tag { font-size: 9px; color: #64748b; font-weight: normal; }
+.shop-badge .shop-cb { width: 14px; height: 14px; margin: 0; }
+
+.shop-action-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f1f5f9;
+    padding: 6px 10px;
+    border-radius: 8px;
+    margin-top: 8px;
+    border: 1px solid #e2e8f0;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- TAB ခလုတ်များ -->
+    <div class="tabs-container">
+        <button class="tab-btn active" onclick="switchTab('log-tab')">📝 စာရင်းသွင်း</button>
+        <button class="tab-btn" onclick="switchTab('shop-tab')">🏪 ဆိုင်ခွဲများ</button>
+        <button class="tab-btn" onclick="switchTab('view-tab')">📊 စာရင်းဟောင်း</button>
+        <button class="tab-btn" onclick="switchTab('slip-tab')">🧾 စလစ်ထုတ်</button>
+    </div>
+
+    <!-- TAB 1: စာရင်းသွင်းရန် -->
+    <div id="log-tab" class="tab-content active">
+        <div class="card">
+            <h2>Rider Daily Log</h2>
+            <div class="form-group">
+                <div class="row-group">
+                    <div>
+                        <label>Date (ရက်စွဲ)</label>
+                        <input type="date" id="date" onchange="renderDailyLogs()">
+                    </div>
+                    <div>
+                        <label>ရှင်းမည့်ပုံစံ (Auto ပြောင်းပါသည်)</label>
+                        <select id="paymentType">
+                            <option value="direct">Direct Payment (ချက်ချင်းရှင်း)</option>
+                            <option value="monthly">Monthly Payment (လချုပ်)</option>
+                            <option value="other">Other Payment (အခြား)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="row-group">
+                    <div>
+                        <label>From (မှ - ဆိုင်အမည် ရိုက်ရှာပါ)</label>
+                        <input type="text" id="fromShopInput" list="shopDatalist" placeholder="ဆိုင်အမည်ရှာရန်..." oninput="handleShopInput(this.value)">
+                        <datalist id="shopDatalist"></datalist>
+                    </div>
+                    <div>
+                        <label>To (သို့ - ပို့ဆောင်မည့်နေရာ)</label>
+                        <input type="text" id="to" placeholder="နေရာ...">
+                    </div>
+                </div>
+
+                <div class="row-group">
+                    <div>
+                        <label>Order တန်ဖိုး</label>
+                        <input type="number" id="orderValue" value="0" onfocus="this.select()">
+                    </div>
+                    <div>
+                        <label>စိုက်ငွေ</label>
+                        <input type="number" id="advancePay" value="0" onfocus="this.select()">
+                    </div>
+                </div>
+
+                <div class="row-group">
+                    <div>
+                        <label>Delivery Fee</label>
+                        <input type="number" id="delivFee" value="0" onfocus="this.select()">
+                    </div>
+                    <div>
+                        <label>Rider Fee %</label>
+                        <input type="number" id="feePercent" value="70" onfocus="this.select()">
+                    </div>
+                </div>
+
+                <div>
+                    <label>လက်ခံရရှိငွေ (Customer ပေးငွေ)</label>
+                    <input type="number" id="receivedAmt" value="0" onfocus="this.select()">
+                </div>
+
+                <div>
+                    <label>Remark (မှတ်ချက်)</label>
+                    <input type="text" id="remark" placeholder="မှတ်ချက်ရှိလျှင်ရေးရန်...">
+                </div>
+            </div>
+
+            <button class="primary-btn" onclick="addLog()">Add Log</button>
+
+            <!-- DAILY LIST TABLE -->
+            <div style="margin-top: 14px;">
+                <label style="color:#2563eb; font-weight:bold;">📅 ယနေ့စာရင်းများ</label>
+                <div class="table-responsive">
+                    <table class="log-table">
+                        <thead>
+                            <tr>
+                                <th style="text-align: center; width: 30px;">No</th>
+                                <th>From ➔ To</th>
+                                <th style="text-align: right;">Order</th>
+                                <th style="text-align: right;">စိုက်ငွေ</th>
+                                <th style="text-align: right;">Deli</th>
+                                <th style="text-align: right;">ရရှိငွေ</th>
+                                <th>Remark</th>
+                                <th style="text-align: center; width: 40px;">X</th>
+                            </tr>
+                        </thead>
+                        <tbody id="logTableBody"></tbody>
+                    </table>
+                    <p id="emptyText" style="text-align:center; color:#94a3b8; font-size:12px; padding: 12px 0; margin:0;">ယနေ့စာရင်း မရှိသေးပါ။</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 2: SHOP MANAGEMENT -->
+    <div id="shop-tab" class="tab-content">
+        <div class="card">
+            <h2>🏪 ဆိုင်ခွဲများ စီမံရန်</h2>
+            <div class="form-group" style="background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                <div>
+                    <label>ဆိုင်အမျိုးအစား သတ်မှတ်ရန်</label>
+                    <select id="newShopType">
+                        <option value="direct">Direct Payment (ချက်ချင်းရှင်း)</option>
+                        <option value="monthly">Monthly Payment (လချုပ်)</option>
+                        <option value="other">Other Payment (အခြား)</option>
+                    </select>
+                </div>
+                <div>
+                    <label>ဆိုင်အမည်များ (စာကြောင်းခွဲပြီး အများကြီးထည့်နိုင်သည်)</label>
+                    <textarea id="newShopInput" rows="3" placeholder="Shwe Palin&#10;KFC"></textarea>
+                </div>
+                <button class="primary-btn" onclick="addNewShop()" style="background: #10b981; margin-top: 4px;">+ သိမ်းဆည်းရန်</button>
+            </div>
+
+            <div style="margin-top: 14px;">
+                <div class="shop-filter-container">
+                    <button class="shop-filter-btn active" id="sbtn-all" onclick="changeShopFilter('all')">All (<span id="cnt-all">0</span>)</button>
+                    <button class="shop-filter-btn" id="sbtn-direct" onclick="changeShopFilter('direct')">Direct (<span id="cnt-direct">0</span>)</button>
+                    <button class="shop-filter-btn" id="sbtn-monthly" onclick="changeShopFilter('monthly')">Monthly (<span id="cnt-monthly">0</span>)</button>
+                    <button class="shop-filter-btn" id="sbtn-other" onclick="changeShopFilter('other')">Other (<span id="cnt-other">0</span>)</button>
+                </div>
+
+                <div class="shop-action-bar">
+                    <label style="display: flex; align-items: center; gap: 4px; font-size: 12px; cursor: pointer;">
+                        <input type="checkbox" id="selectAllShopsCb" onchange="toggleSelectAllShops(this.checked)"> အားလုံးရွေး
+                    </label>
+                    <button onclick="deleteSelectedShops()" style="background: #ef4444; color: white; padding: 4px 10px; font-size: 11px; border:none; border-radius: 4px; font-weight:bold;">🗑️ ဖျက်ရန်</button>
+                </div>
+
+                <div class="shop-badges" id="shopBadgesArea"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 3: DATA EXPLORER -->
+    <div id="view-tab" class="tab-content">
+        <div class="card">
+            <h2>📊 Data History (မှတ်တမ်းများ)</h2>
+            <div class="filter-container">
+                <button class="filter-btn active" id="btn-daily" onclick="changeFilter('daily')">Daily</button>
+                <button class="filter-btn" id="btn-weekly" onclick="changeFilter('weekly')">Weekly</button>
+                <button class="filter-btn" id="btn-monthly" onclick="changeFilter('monthly')">Monthly</button>
+                <button class="filter-btn" id="btn-choice" onclick="changeFilter('choice')">Choice</button>
+            </div>
+
+            <div id="choice-date-box" style="display: none; margin-bottom: 10px; background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                <div class="row-group">
+                    <div>
+                        <label>From Date</label>
+                        <input type="date" id="filterFromDate" onchange="filterData()">
+                    </div>
+                    <div>
+                        <label>To Date</label>
+                        <input type="date" id="filterToDate" onchange="filterData()">
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="log-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Way</th>
+                            <th style="text-align: right;">Order</th>
+                            <th style="text-align: right;">စိုက်ငွေ</th>
+                            <th style="text-align: right;">Deli</th>
+                            <th style="text-align: right;">ရရှိငွေ</th>
+                            <th>Remark</th>
+                            <th style="text-align: center; width: 40px;">X</th>
+                        </tr>
+                    </thead>
+                    <tbody id="viewTableBody"></tbody>
+                    <tfoot id="viewTableFoot"></tfoot>
+                </table>
+                <p id="viewEmptyText" style="text-align:center; color:#94a3b8; font-size:12px; padding: 12px 0; margin: 0; display:none;">ကိုက်ညီသော စာရင်းမရှိပါ။</p>
+            </div>
+
+            <div class="backup-zone">
+                <p style="margin: 0 0 6px 0; font-size: 11px; font-weight: bold; color: #64748b; text-align: center;">⚙️ Backup & Restore (ဒေတာ သိမ်းဆည်း/ပြန်သွင်းရန်)</p>
+                <div class="backup-buttons">
+                    <button class="btn-backup" onclick="exportSystemData()">📥 Backup ထုတ်ယူရန်</button>
+                    <button class="btn-restore" onclick="triggerImport()">📤 Restore ပြန်သွင်းရန်</button>
+                </div>
+                <input type="file" id="importFile" style="display: none;" accept=".txt" onchange="importSystemData(event)">
+            </div>
+
+            <div class="btn-group" style="margin-top: 10px;">
+                <button onclick="clearAll()" style="background: #dc2626; color:white; padding:10px; border:none; border-radius:8px; font-weight:bold; font-size:12px;">⚠️ ဒေတာအားလုံး အပြီးဖျက်ရန်</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 4: SLIP AREA -->
+    <div id="slip-tab" class="tab-content">
+        <div class="card">
+            <h2>🧾 Voucher Slip</h2>
+            <label class="toggle-container">
+                <input type="checkbox" id="showRiderShareCheck" checked onchange="renderSlip()"> 📊 Rider % Share ကို ထည့်ပြမည်
+            </label>
+
+            <button class="primary-btn" onclick="resetAndGenerateSlip()" style="background: #0284c7; margin-bottom: 10px;">🔄 Update / Generate Slip</button>
+
+            <div class="slip-wrapper">
+                <div id="voucher">
+                    <p style="text-align: center; color: #94a3b8; padding: 16px 0; margin: 0;">စာရင်းတွက်ချက်ရန် အထက်ပါခလုတ်ကို နှိပ်ပါ။</p>
+                </div>
+            </div>
+
+            <button class="primary-btn" onclick="saveSlipImage()" style="background: #059669; margin-top: 10px;">💾 Save Image (ပုံသိမ်းရန်)</button>
+
+            <div id="previewContainer" style="display: none;">
+                <p style="font-size: 11px; color: #334155; font-weight: bold; margin: 0 0 6px 0;">👇 ဖုန်းထဲသိမ်းရန် ပုံပေါ်တွင် ဖိထားပြီး "Download/Save Image" နှိပ်ပါ</p>
+                <div id="imagePreview"></div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+let logs = JSON.parse(localStorage.getItem("rider_logs")) || [];
+let rawShops = JSON.parse(localStorage.getItem("rider_shops")) || [];
+
+let shops = [];
+if (rawShops.length > 0) {
+    shops = typeof rawShops[0] === 'string' ? rawShops.map(sName => ({ name: sName, type: 'direct' })) : rawShops;
+} else {
+    shops = [{ name: "Shwe Palin", type: "direct" }, { name: "KFC", type: "direct" }];
+}
+
+let currentFilter = 'daily'; 
+let currentShopFilter = 'all'; 
+let filteredLogsGlobal = []; 
+let slipDisplayLogs = [];    
+
+document.getElementById("date").valueAsDate = new Date();
+document.getElementById("filterFromDate").valueAsDate = new Date();
+document.getElementById("filterToDate").valueAsDate = new Date();
+
+function cleanShopName(name) {
+    if (!name) return "-";
+    return name.replace(/\s*\([\d\w\s]*direct[\d\w\s]*\)/gi, "").replace(/\s*\([\d\w\s]*monthly[\d\w\s]*\)/gi, "").trim();
+}
+
+function handleShopInput(val) {
+    let cleanVal = cleanShopName(val.trim());
+    let foundShop = shops.find(s => s.name.toLowerCase() === cleanVal.toLowerCase());
+    if (foundShop) { document.getElementById("paymentType").value = foundShop.type; }
+}
+
+function switchTab(tabId) {
+    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    
+    let btnIndex = tabId === 'shop-tab' ? 1 : (tabId === 'view-tab' ? 2 : (tabId === 'slip-tab' ? 3 : 0));
+    document.querySelectorAll('.tab-btn')[btnIndex].classList.add('active');
+
+    if(tabId === 'log-tab') renderDailyLogs();
+    if(tabId === 'view-tab') filterData();
+    if(tabId === 'slip-tab') resetAndGenerateSlip();
+}
+
+function changeFilter(type) {
+    currentFilter = type;
+    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById(`btn-${type}`).classList.add('active');
+    document.getElementById('choice-date-box').style.display = type === 'choice' ? 'block' : 'none';
+    filterData();
+}
+
+function changeShopFilter(type) {
+    currentShopFilter = type;
+    document.querySelectorAll('.shop-filter-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById(`sbtn-${type}`).classList.add('active');
+    document.getElementById("selectAllShopsCb").checked = false;
+    renderShops();
+}
+
+function filterData() {
+    let tbody = document.getElementById("viewTableBody");
+    let tfoot = document.getElementById("viewTableFoot");
+    let emptyText = document.getElementById("viewEmptyText");
+    tbody.innerHTML = ""; tfoot.innerHTML = "";
+
+    if(logs.length === 0) { filteredLogsGlobal = []; emptyText.style.display = "block"; return; }
+    emptyText.style.display = "none";
+
+    let today = new Date(); today.setHours(0,0,0,0);
+
+    filteredLogsGlobal = logs.filter(log => {
+        let logDate = new Date(log.date); logDate.setHours(0,0,0,0);
+        if(currentFilter === 'daily') {
+            let target = new Date(); target.setHours(0,0,0,0); return logDate.getTime() === target.getTime();
+        } else if(currentFilter === 'weekly') {
+            let oneWeekAgo = new Date(); oneWeekAgo.setDate(oneWeekAgo.getDate() - 7); oneWeekAgo.setHours(0,0,0,0);
+            return logDate >= oneWeekAgo && logDate <= today;
+        } else if(currentFilter === 'monthly') {
+            return logDate.getMonth() === new Date().getMonth() && logDate.getFullYear() === new Date().getFullYear();
+        } else if(currentFilter === 'choice') {
+            let fromVal = document.getElementById("filterFromDate").value;
+            let toVal = document.getElementById("filterToDate").value;
+            if(!fromVal || !toVal) return false;
+            let fDate = new Date(fromVal); fDate.setHours(0,0,0,0);
+            let tDate = new Date(toVal); tDate.setHours(0,0,0,0);
+            return logDate >= fDate && logDate <= tDate;
+        }
+        return true;
+    });
+
+    let displayLogs = [...filteredLogsGlobal].reverse();
+    if(displayLogs.length === 0) { emptyText.style.display = "block"; return; }
+
+    let tOrder = 0, tAdvance = 0, tDeli = 0, tReceived = 0;
+    displayLogs.forEach(log => {
+        let originalIndex = logs.findIndex(l => l === log);
+        let tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td style="color:#64748b;">${log.date}</td>
+            <td><b>${cleanShopName(log.from)}➔${log.to}</b></td>
+            <td style="text-align:right;">${log.orderValue.toLocaleString()}</td>
+            <td style="text-align:right; color:#ef4444;">${log.advancePay.toLocaleString()}</td>
+            <td style="text-align:right;">${log.delivFee.toLocaleString()}</td>
+            <td style="text-align:right; color:#10b981; font-weight:bold;">${log.receivedAmt.toLocaleString()}</td>
+            <td style="color:#64748b; font-style:italic;">${log.remark}</td>
+            <td style="text-align:center;"><button class="delete-btn" onclick="deleteItemFromHistory(${originalIndex})">×</button></td>
+        `;
+        tbody.appendChild(tr);
+        tOrder += log.orderValue; tAdvance += log.advancePay; tDeli += log.delivFee; tReceived += log.receivedAmt;
+    });
+
+     AmayaFoot = `<tr><td colspan="2" style="text-align:center;">TOTAL</td><td style="text-align:right;">${tOrder.toLocaleString()}</td><td style="text-align:right; color:#ef4444;">${tAdvance.toLocaleString()}</td><td style="text-align:right;">${tDeli.toLocaleString()}</td><td style="text-align:right; color:#10b981;">${tReceived.toLocaleString()}</td><td colspan="2"></td></tr>`;
+    tfoot.innerHTML = AmayaFoot;
+}
+
+function addLog() {
+    let date = document.getElementById("date").value;
+    let paymentType = document.getElementById("paymentType").value;
+    let from = cleanShopName(document.getElementById("fromShopInput").value.trim() || "-");
+    let to = document.getElementById("to").value.trim() || "-";
+    let orderValue = Number(document.getElementById("orderValue").value) || 0;
+    let advancePay = Number(document.getElementById("advancePay").value) || 0;
+    let delivFee = Number(document.getElementById("delivFee").value) || 0;
+    let feePercent = Number(document.getElementById("feePercent").value) || 0;
+    let receivedAmt = Number(document.getElementById("receivedAmt").value) || 0;
+    let remark = document.getElementById("remark").value.trim() || "-";
+
+    logs.push({
+        date: date, paymentType: paymentType, from: from, to: to, orderValue: orderValue,
+        advancePay: advancePay, delivFee: delivFee, feePercent: feePercent,
+        riderShare: (delivFee * feePercent) / 100, receivedAmt: receivedAmt, remark: remark
+    });
+
+    document.getElementById("fromShopInput").value = "";
+    document.getElementById("to").value = "";
+    document.getElementById("orderValue").value = "0";
+    document.getElementById("advancePay").value = "0";
+    document.getElementById("delivFee").value = "0";
+    document.getElementById("receivedAmt").value = "0";
+    document.getElementById("remark").value = "";
+
+    localStorage.setItem("rider_logs", JSON.stringify(logs));
+    renderDailyLogs();
+}
+
+function renderDailyLogs() {
+    let tbody = document.getElementById("logTableBody");
+    let emptyText = document.getElementById("emptyText");
+    tbody.innerHTML = "";
+
+    let selectedDate = document.getElementById("date").value;
+    let dailyLogs = logs.filter(log => log.date === selectedDate);
+
+    if(dailyLogs.length === 0) { emptyText.style.display = "block"; return; }
+    emptyText.style.display = "none";
+
+    dailyLogs.forEach((log) => {
+        let originalIndex = logs.findIndex(l => l === log);
+        let tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td style="text-align:center; color:#94a3b8; font-weight:bold;">${tbody.children.length + 1}</td>
+            <td><b>${cleanShopName(log.from)} ➔ ${log.to}</b></td>
+            <td style="text-align:right;">${log.orderValue.toLocaleString()}</td>
+            <td style="text-align:right; color:#ef4444;">${log.advancePay.toLocaleString()}</td>
+            <td style="text-align:right;">${log.delivFee.toLocaleString()}</td>
+            <td style="text-align:right; color:#10b981; font-weight:bold;">${log.receivedAmt.toLocaleString()}</td>
+            <td style="color:#64748b; font-style:italic;">${log.remark}</td>
+            <td style="text-align:center;"><button class="delete-btn" onclick="deleteItemFromDaily(${originalIndex})">×</button></td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function renderShops() {
+    let datalist = document.getElementById("shopDatalist");
+    let badgesArea = document.getElementById("shopBadgesArea");
+    datalist.innerHTML = ""; badgesArea.innerHTML = "";
+    
+    document.getElementById("cnt-all").innerText = shops.length;
+    document.getElementById("cnt-direct").innerText = shops.filter(s => s.type === 'direct').length;
+    document.getElementById("cnt-monthly").innerText = shops.filter(s => s.type === 'monthly').length;
+    document.getElementById("cnt-other").innerText = shops.filter(s => s.type === 'other').length;
+
+    [...shops].sort((a, b) => a.name.localeCompare(b.name, 'my')).forEach(shop => {
+        let opt = document.createElement("option"); opt.value = shop.name; datalist.appendChild(opt);
+    });
+
+    shops.filter(shop => currentShopFilter === 'all' || shop.type === currentShopFilter).forEach(shop => {
+        let originalIndex = shops.findIndex(s => s.name === shop.name);
+        let displayType = shop.type === 'direct' ? 'Direct' : (shop.type === 'monthly' ? 'Monthly' : 'Other');
+        let badge = document.createElement("div");
+        badge.className = "shop-badge";
+        badge.innerHTML = `<input type="checkbox" class="shop-cb" data-index="${originalIndex}"><div class="shop-info"><span>${shop.name}</span><span class="shop-type-tag">(${displayType})</span></div>`;
+        badgesArea.appendChild(badge);
+    });
+}
+
+function toggleSelectAllShops(isChecked) {
+    document.querySelectorAll(".shop-cb").forEach(cb => cb.checked = isChecked);
+}
+
+function deleteSelectedShops() {
+    let checkboxes = document.querySelectorAll(".shop-cb:checked");
+    if (checkboxes.length === 0) { alert("ဖျက်ရန် ဆိုင်များကို ရွေးပေးပါဦးဗျာ။"); return; }
+
+    if (confirm(`ရွေးချယ်ထားသော ဆိုင်ခွဲ (${checkboxes.length}) ဆိုင်ကို ဖြတ်ထုတ်မလားဗျာ?`)) {
+        let indices = []; checkboxes.forEach(cb => indices.push(parseInt(cb.getAttribute("data-index"))));
+        indices.sort((a, b) => b - a).forEach(index => shops.splice(index, 1));
+        localStorage.setItem("rider_shops", JSON.stringify(shops));
+        document.getElementById("selectAllShopsCb").checked = false;
+        renderShops();
+    }
+}
+
+function addNewShop() {
+    let input = document.getElementById("newShopInput");
+    let rawText = input.value.trim();
+    if(!rawText) return alert("ဆိုင်အမည် ထည့်ပေးပါဗျာ။");
+    
+    let added = 0;
+    rawText.split(/[,\n]+/).forEach(item => {
+        let name = cleanShopName(item.trim());
+        if(name && !shops.some(s => s.name.toLowerCase() === name.toLowerCase())) {
+            shops.push({ name: name, type: document.getElementById("newShopType").value });
+            added++;
+        }
+    });
+
+    localStorage.setItem("rider_shops", JSON.stringify(shops));
+    renderShops(); input.value = "";
+    alert(`ဆိုင်အမည်သစ် (${added}) ဆိုင် ထည့်သွင်းပြီးပါပြီ။`);
+}
+
+function deleteItemFromDaily(index) { if(confirm("ဖျက်မှာ သေချာပါသလား?")) { logs.splice(index, 1); localStorage.setItem("rider_logs", JSON.stringify(logs)); renderDailyLogs(); } }
+function deleteItemFromHistory(index) { if(confirm("ဖျက်မှာ သေချာပါသလား?")) { logs.splice(index, 1); localStorage.setItem("rider_logs", JSON.stringify(logs)); filterData(); } }
+
+function clearAll() {
+    if (confirm("⚠️ သတိပေးချက်:\n\nဒေတာမှတ်တမ်းအားလုံးကို အပြီးတိုင် ဖျက်ဆီးပစ်ပါမည်။ ပြန်ပြင်၍ မရပါ။ သေချာပါသလား?")) {
+        logs = []; localStorage.setItem("rider_logs", JSON.stringify(logs));
+        renderDailyLogs(); filterData();
+        document.getElementById("voucher").innerHTML = '<p style="text-align: center; color: #94a3b8; padding: 16px 0; margin: 0;">စာရင်းတွက်ချက်ရန် အထက်ပါခလုတ်ကို နှိပ်ပါ။</p>';
+        document.getElementById("previewContainer").style.display = "none";
+    }
+}
+
+function resetAndGenerateSlip() { slipDisplayLogs = [...filteredLogsGlobal]; renderSlip(); }
+
+function renderSlip() {
+    let voucher = document.getElementById("voucher");
+    let isShowRiderShare = document.getElementById("showRiderShareCheck").checked; 
+    if(slipDisplayLogs.length === 0) {
+        voucher.innerHTML = '<p style="text-align:center; color:#dc2626; font-weight:bold; padding:16px 0;">စလစ်ထုတ်ရန် စာရင်းမှတ်တမ်း မရှိသေးပါဗျာ!</p>'; return;
+    }
+
+    let totalOrder = 0, totalAdvance = 0, totalDeli = 0, totalRiderShare = 0, totalReceived = 0;
+    let filterTitleText = currentFilter.toUpperCase() + " REPORT";
+    if(currentFilter === 'choice') {
+        filterTitleText = `PERIOD: ${document.getElementById("filterFromDate").value} TO ${document.getElementById("filterToDate").value}`;
+    }
+
+    let html = `<div class="v-title">DELIVERY SLIP</div><div class="v-date">${filterTitleText}</div><table class="voucher-table"><thead><tr><th style="text-align:center;width:25px;">No</th><th style="text-align:left;">Date</th><th style="text-align:left;">Way</th><th style="text-align:right;">Order</th><th style="text-align:right;">စိုက်ငွေ</th><th style="text-align:right;">Deli</th>${isShowRiderShare ? `<th style="text-align:right;">Rider%</th>`:``}<th style="text-align:right;">ရရှိငွေ</th><th style="text-align:left;padding-left:4px;">Remark</th><th class="hide-on-capture" style="text-align:center;width:45px;color:#f59e0b;">Act</th></tr></thead><tbody>`;
+
+    slipDisplayLogs.forEach((log, i) => {
+        html += `<tr><td style="text-align:center;color:#64748b;">${i+1}</td><td style="text-align:left;color:#64748b;">${log.date.substring(5)}</td><td style="text-align:left;font-weight:500;">${cleanShopName(log.from)}➔${log.to}</td><td style="text-align:right;">${log.orderValue.toLocaleString()}</td><td style="text-align:right;color:#ef4444;">${log.advancePay.toLocaleString()}</td><td style="text-align:right;">${log.delivFee.toLocaleString()}</td>${isShowRiderShare ? `<td style="text-align:right;color:#2563eb;">${log.riderShare.toLocaleString()}</td>`:``}<td style="text-align:right;color:#10b981;font-weight:bold;">${log.receivedAmt.toLocaleString()}</td><td style="text-align:left;color:#64748b;font-style:italic;padding-left:4px;">${log.remark}</td><td class="hide-on-capture" style="text-align:center;"><button class="slip-remove-btn" onclick="removeRowFromSlip(${i})">ဖြုတ်</button></td></tr>`;
+        totalOrder += log.orderValue; totalAdvance += log.advancePay; totalDeli += log.delivFee; totalRiderShare += log.riderShare; totalReceived += log.receivedAmt;
+    });
+
+    html += `</tbody><tfoot><tr><td colspan="3" style="text-align:center;">TOTAL (${slipDisplayLogs.length} Ways)</td><td style="text-align:right;">${totalOrder.toLocaleString()}</td><td style="text-align:right;color:#ef4444;">${totalAdvance.toLocaleString()}</td><td style="text-align:right;">${totalDeli.toLocaleString()}</td>${isShowRiderShare ? `<td style="text-align:right;color:#2563eb;">${totalRiderShare.toLocaleString()}</td>`:``}<td style="text-align:right;color:#10b981;font-weight:900;">${totalReceived.toLocaleString()}</td><td></td><td class="hide-on-capture"></td></tr></tfoot></table>`;
+    voucher.innerHTML = html;
+}
+
+function removeRowFromSlip(index) { slipDisplayLogs.splice(index, 1); renderSlip(); }
+
+function saveSlipImage() {
+    let voucherDiv = document.getElementById("voucher");
+    if(slipDisplayLogs.length === 0 || voucherDiv.innerText.includes("တွက်ချက်ရန်")) return alert("ထုတ်ယူရန် စလစ်မရှိသေးပါဗျာ။");
+    
+    let hideEls = voucherDiv.querySelectorAll('.hide-on-capture');
+    hideEls.forEach(el => el.style.display = 'none');
+
+    // Canvas configuration optimized for handling flexible screen widths offline
+    let renderOptions = { scale: 2, backgroundColor: "#ffffff", useCORS: true, logging: false };
+    
+    if (typeof html2canvas === 'undefined') {
+        alert("အော့ဖ်လိုင်းစနစ်တွင် ပုံထုတ်ရန် ပထမဆုံးအကြိမ် အင်တာနက်ဖွင့်ပြီး Library ကို Loading လုပ်ပေးရန် လိုအပ်ပါသည်ဗျာ။ (သို့မဟုတ် Browser ရဲ့ Screenshot စနစ်ကို သုံးနိုင်ပါသည်။)");
+        hideEls.forEach(el => el.style.display = '');
+        return;
+    }
+
+    html2canvas(voucherDiv, renderOptions).then(canvas => {
+        hideEls.forEach(el => el.style.display = '');
+        let imgData = canvas.toDataURL("image/png");
+        
+        let link = document.createElement("a");
+        link.download = `Rider_Slip_${new Date().toISOString().slice(0,10)}.png`;
+        link.href = imgData; link.click();
+        
+        let container = document.getElementById("previewContainer");
+        let preview = document.getElementById("imagePreview");
+        preview.innerHTML = "";
+        let img = document.createElement("img"); img.src = imgData;
+        preview.appendChild(img);
+        container.style.display = "block";
+        container.scrollIntoView({ behavior: 'smooth' });
+    });
+}
+
+function exportSystemData() {
+    if(logs.length === 0 && shops.length === 0) return alert("သိမ်းဆည်းရန် ဒေတာမရှိသေးပါဗျာ။");
+    let blob = new Blob([JSON.stringify({ logs: logs, shops: shops, backupVersion: "3.5" })], { type: "text/plain" });
+    let link = document.createElement("a");
+    link.download = `Rider_System_Backup_${new Date().toISOString().slice(0,10)}.txt`;
+    link.href = URL.createObjectURL(blob); link.click();
+}
+
+function triggerImport() { document.getElementById("importFile").click(); }
+
+function importSystemData(event) {
+    let file = event.target.files[0]; if (!file) return;
+    let reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            let imported = JSON.parse(e.target.result);
+            if (imported && imported.logs) {
+                let appendMode = confirm("ယခင်ရှိပြီးသား ဒေတာတွေထဲကို ပေါင်းထည့်မလား? \n\n(Cancel နှိပ်ရင် အရင်ဒေတာတွေ အစားထိုးလဲလှယ်သွားပါလိမ့်မယ်။)");
+                if (appendMode) {
+                    imported.logs.forEach(l => { l.from = cleanShopName(l.from); logs.push(l); });
+                    (imported.shops || []).forEach(s => {
+                        let cName = typeof s === 'string' ? cleanShopName(s) : cleanShopName(s.name);
+                        let sType = typeof s === 'string' ? 'direct' : s.type;
+                        if(cName && !shops.some(ex => ex.name.toLowerCase() === cName.toLowerCase())) { shops.push({ name: cName, type: sType }); }
+                    });
+                } else {
+                    logs = imported.logs.map(l => { l.from = cleanShopName(l.from); return l; });
+                    shops = typeof (imported.shops || [])[0] === 'string' ? imported.shops.map(s => ({ name: cleanShopName(s), type: 'direct' })) : imported.shops.map(s => ({ name: cleanShopName(s.name), type: s.type }));
+                }
+                localStorage.setItem("rider_logs", JSON.stringify(logs));
+                localStorage.setItem("rider_shops", JSON.stringify(shops));
+                renderDailyLogs(); renderShops(); filterData();
+                alert("ဒေတာ ပြန်လည်သိမ်းဆည်းခြင်း အောင်မြင်ပါတယ်ဗျာ။");
+            } else { alert("မှားယွင်းသော ဖိုင်ပုံစံဖြစ်နေပါသည်။"); }
+        } catch (err) { alert("ဖိုင်ကို ဖတ်မရပါ။ ဒေတာပုံစံ ပျက်စီးနေနိုင်ပါတယ်။"); }
+    };
+    reader.readAsText(file); event.target.value = ""; 
+}
+
+renderDailyLogs();
+renderShops();
+</script>
+
+</body>
+</html>
