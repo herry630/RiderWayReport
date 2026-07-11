@@ -355,6 +355,15 @@ button.primary-btn:active { transform: scale(0.99); }
 </head>
 
 <body>
+<!-- ဒီကုဒ်လေးကို tabs-container ရဲ့ အပေါ်မှာ ထည့်ပေးပါ -->
+<div class="card" id="loginCard" style="margin-bottom: 12px; border-left: 5px solid #2563eb;">
+    <h3 style="text-align: left; font-size: 14px; margin-bottom: 8px;">👤 Rider Profile သတ်မှတ်ရန်</h3>
+    <div style="display: flex; gap: 6px;">
+        <input type="text" id="riderNameInput" placeholder="Rider နာမည် ရိုက်ထည့်ပါ... (ဥပမာ - မောင်မောင်)" style="padding: 8px;">
+        <button onclick="saveRiderProfile()" style="background: #2563eb; color: white; border: none; padding: 0 16px; border-radius: 8px; font-weight: bold; font-size: 12px; cursor: pointer; white-space: nowrap;">သိမ်းမည်</button>
+    </div>
+    <p id="currentRiderText" style="margin: 6px 0 0 0; font-size: 11px; color: #64748b; font-weight: bold; display: none;"></p>
+</div>
 
 <div class="container">
 
@@ -714,11 +723,15 @@ function addLog() {
     let feePercent = Number(document.getElementById("feePercent").value) || 0;
     let receivedAmt = Number(document.getElementById("receivedAmt").value) || 0;
     let remark = document.getElementById("remark").value.trim() || "-";
+    
+    // ဖုန်းထဲမှာ သတ်မှတ်ထားတဲ့ Rider Name ကို ယူသည်
+    let riderName = localStorage.getItem("rider_profile_name") || "Unknown Rider";
 
     logs.push({
         date: date, paymentType: paymentType, from: from, to: to, orderValue: orderValue,
         advancePay: advancePay, delivFee: delivFee, feePercent: feePercent,
-        riderShare: (delivFee * feePercent) / 100, receivedAmt: receivedAmt, remark: remark
+        riderShare: (delivFee * feePercent) / 100, receivedAmt: receivedAmt, remark: remark,
+        riderName: riderName // <-- Rider နာမည်ကိုပါ Database (Log) ထဲ ထည့်သိမ်းတာပါ
     });
 
     document.getElementById("fromShopInput").value = "";
@@ -732,6 +745,7 @@ function addLog() {
     localStorage.setItem("rider_logs", JSON.stringify(logs));
     renderDailyLogs();
 }
+
 
 function renderDailyLogs() {
     let tbody = document.getElementById("logTableBody");
@@ -951,7 +965,82 @@ function importSystemData(event) {
     };
     reader.readAsText(file); event.target.value = ""; 
 }
+// Rider Profile သိမ်းဆည်းရန် နှင့် ပြသရန် Logic
+function saveRiderProfile() {
+    let nameInput = document.getElementById("riderNameInput").value.trim();
+    if (!nameInput) return alert("Rider နာမည် ရိုက်ထည့်ပေးပါဦးဗျာ။");
+    
+    localStorage.setItem("rider_profile_name", nameInput);
+    checkRiderProfile();
+    alert(`Rider: ${nameInput} အဖြစ် သတ်မှတ်ပြီးပါပြီ။`);
+}
 
+function checkRiderProfile() {
+    let savedName = localStorage.getItem("rider_profile_name");
+    let textEl = document.getElementById("currentRiderText");
+    let inputEl = document.getElementById("riderNameInput");
+    
+    if (savedName) {
+        inputEl.value = savedName;
+        textEl.innerText = `လက်ရှိအသုံးပြုသူ - Rider: ${savedName}`;
+        textEl.style.display = "block";
+    } else {
+        textEl.style.display = "none";
+    }
+}
+
+// မူလ renderSlip Function ကို Rider Name ပြသနိုင်အောင် မွမ်းမံခြင်း
+// အစ်ကို့ရဲ့ renderSlip() နေရာမှာ ဒါလေး အစားထိုးပေးပါ (Title အောက်မှာ Rider Name ပေါ်လာမှာပါ)
+function renderSlip() {
+    let voucher = document.getElementById("voucher");
+    let isShowRiderShare = document.getElementById("showRiderShareCheck").checked; 
+    if(slipDisplayLogs.length === 0) {
+        voucher.innerHTML = '<p style="text-align:center; color:#dc2626; font-weight:bold; padding:16px 0;">စလစ်ထုတ်ရန် စာရင်းမှတ်တမ်း မရှိသေးပါဗျာ!</p>'; return;
+    }
+
+    let totalOrder = 0, totalAdvance = 0, totalDeli = 0, totalRiderShare = 0, totalReceived = 0;
+    let filterTitleText = currentFilter.toUpperCase() + " REPORT";
+    if(currentFilter === 'choice') {
+        filterTitleText = `PERIOD: ${document.getElementById("filterFromDate").value} TO ${document.getElementById("filterToDate").value}`;
+    }
+    
+    // စလစ်ထဲမှာ လက်ရှိ Rider Name ကို ပြရန် ယူခြင်း
+    let currentRider = localStorage.getItem("rider_profile_name") || "Not Specified";
+
+    // --- စလစ်ရဲ့ ခေါင်းစဉ်ပိုင်းမှာ Rider Name ကိုပါ ထည့်သွင်းလိုက်ပါတယ် ---
+    let html = `
+        <div class="v-title">DELIVERY SLIP</div>
+        <div class="v-date">${filterTitleText}</div>
+        <div style="text-align: center; font-size: 12px; font-weight: bold; color: #2563eb; margin-bottom: 12px;">👤 Rider: ${currentRider}</div>
+        <table class="voucher-table">
+        <thead>
+            <tr>
+                <th style="text-align:center;width:25px;">No</th>
+                <th style="text-align:left;">Date</th>
+                <th style="text-align:left;">Way</th>
+                <th style="text-align:right;">Order</th>
+                <th style="text-align:right;">စိုက်ငွေ</th>
+                <th style="text-align:right;">Deli</th>
+                ${isShowRiderShare ? `<th style="text-align:right;">Rider%</th>`:``}
+                <th style="text-align:right;">ရရှိငွေ</th>
+                <th style="text-align:left;padding-left:4px;">Remark</th>
+                <th class="hide-on-capture" style="text-align:center;width:45px;color:#f59e0b;">Act</th>
+            </tr>
+        </thead>
+        <tbody>
+    `;
+
+    slipDisplayLogs.forEach((log, i) => {
+        html += `<tr><td style="text-align:center;color:#64748b;">${i+1}</td><td style="text-align:left;color:#64748b;">${log.date.substring(5)}</td><td style="text-align:left;font-weight:500;">${cleanShopName(log.from)}➔${log.to}</td><td style="text-align:right;">${log.orderValue.toLocaleString()}</td><td style="text-align:right;color:#ef4444;">${log.advancePay.toLocaleString()}</td><td style="text-align:right;">${log.delivFee.toLocaleString()}</td>${isShowRiderShare ? `<td style="text-align:right;color:#2563eb;">${log.riderShare.toLocaleString()}</td>`:``}<td style="text-align:right;color:#10b981;font-weight:bold;">${log.receivedAmt.toLocaleString()}</td><td style="text-align:left;color:#64748b;font-style:italic;padding-left:4px;">${log.remark}</td><td class="hide-on-capture" style="text-align:center;"><button class="slip-remove-btn" onclick="removeRowFromSlip(${i})">ဖြုတ်</button></td></tr>`;
+        totalOrder += log.orderValue; totalAdvance += log.advancePay; totalDeli += log.delivFee; totalRiderShare += log.riderShare; totalReceived += log.receivedAmt;
+    });
+
+    html += `</tbody><tfoot><tr><td colspan="3" style="text-align:center;">TOTAL (${slipDisplayLogs.length} Ways)</td><td style="text-align:right;">${totalOrder.toLocaleString()}</td><td style="text-align:right;color:#ef4444;">${totalAdvance.toLocaleString()}</td><td style="text-align:right;">${totalDeli.toLocaleString()}</td>${isShowRiderShare ? `<td style="text-align:right;color:#2563eb;">${totalRiderShare.toLocaleString()}</td>`:``}<td style="text-align:right;color:#10b981;font-weight:900;">${totalReceived.toLocaleString()}</td><td></td><td class="hide-on-capture"></td></tr></tfoot></table>`;
+    voucher.innerHTML = html;
+}
+
+// ကုဒ်ရဲ့ အောက်ဆုံးနားက renderShops(); အောက်ခြေမှာ ဒါလေး ထည့်ပေးပါ
+checkRiderProfile();
 renderDailyLogs();
 renderShops();
 </script>
