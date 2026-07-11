@@ -1,0 +1,17 @@
+{
+  "short_name": "RiderReport",
+  "name": "Rider Way Report",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2830/2830305.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/RiderWayReport/",
+  "background_color": "#111827",
+  "theme_color": "#111827",
+  "display": "standalone",
+  "orientation": "portrait"
+}
