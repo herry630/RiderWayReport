@@ -600,9 +600,12 @@ let currentShopFilter = 'all';
 let filteredLogsGlobal = []; 
 let slipDisplayLogs = [];    
 
-document.getElementById("date").valueAsDate = new Date();
-document.getElementById("filterFromDate").valueAsDate = new Date();
-document.getElementById("filterToDate").valueAsDate = new Date();
+// --- ဒီစာကြောင်း ၃ ကြောင်းနေရာမှာ အောက်ကအတိုင်း အစားထိုးပါ ---
+const todayStr = new Date().toLocaleDateString('sv-SE'); // YYYY-MM-DD ပုံစံ Auto ထွက်စေရန်
+
+document.getElementById("date").value = todayStr;
+document.getElementById("filterFromDate").value = todayStr;
+document.getElementById("filterToDate").value = todayStr;
 
 function cleanShopName(name) {
     if (!name) return "-";
@@ -933,26 +936,6 @@ function importSystemData(event) {
 
 renderDailyLogs();
 renderShops();
-
-// App ပွင့်ပွင့်ချင်း ဒီနေ့ရက်စွဲကို Auto ထည့်ပေးပြီး စာရင်းပြန်ဆွဲမည့်ကုဒ်
-window.addEventListener('DOMContentLoaded', () => {
-    const dateInput = document.getElementById('date');
-    if (dateInput) {
-        const today = new Date();
-        const year = today.getFullYear();
-        const month = String(today.getMonth() + 1).padStart(2, '0');
-        const day = String(today.getDate()).padStart(2, '0');
-        
-        // ဒီနေ့ရက်စွဲကို Auto ထည့်ပေးခြင်း
-        dateInput.value = `${year}-${month}-${day}`;
-        
-        // ရက်စွဲပြောင်းသွားရင် သက်ဆိုင်ရာ စာရင်းတွေ Auto ပြန်ပေါ်လာအောင် လှမ်းခေါ်ပေးတာပါ
-        if (typeof renderDailyLogs === 'function') {
-            renderDailyLogs();
-        }
-    }
-});
-
 </script>
 
 </body>
