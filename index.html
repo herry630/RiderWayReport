@@ -863,7 +863,7 @@ function removeRowFromSlip(index) { slipDisplayLogs.splice(index, 1); renderSlip
 
 function saveSlipImage() {
     let voucherDiv = document.getElementById("voucher");
-    if(slipDisplayLogs.length === 0 || voucherDiv.innerText.includes("တွက်ချက်ရန်")) return alert("ထုတ်ယူရန် စလစ်မရှိသေးပါဗျာ။");
+    if(slipDisplayLogs.length === 0 || voucherDiv.innerText.includes("တွ6က်ချက်ရန်")) return alert("ထုတ်ယူရန် စလစ်မရှိသေးပါဗျာ။");
     
     let hideEls = voucherDiv.querySelectorAll('.hide-on-capture');
     hideEls.forEach(el => el.style.display = 'none');
@@ -877,12 +877,29 @@ function saveSlipImage() {
         return;
     }
 
+    // --- ဖိုင်နာမည်အတွက် ရက်စွဲကို Dynamic ယူသည့်အပိုင်း ---
+    let fileDate = "";
+    if (currentFilter === 'daily') {
+        // Daily ဆိုရင် Date Input ထဲက ရက်စွဲကို ယူမယ်
+        fileDate = document.getElementById("date").value;
+    } else if (currentFilter === 'choice') {
+        // Choice (ရက်စွဲရွေးရန်) ဆိုရင် From-To ရက်စွဲကို ပေါင်းပြီး ပြပေးမယ်
+        let fromD = document.getElementById("filterFromDate").value;
+        let toD = document.getElementById("filterToDate").value;
+        fileDate = `${fromD}_to_${toD}`;
+    } else {
+        // Weekly သို့မဟုတ် Monthly ဆိုရင် filter အမျိုးအစားအမည်ကို ထည့်ပေးမယ်
+        fileDate = currentFilter + "_" + new Date().toLocaleDateString('sv-SE');
+    }
+    // ---------------------------------------------
+
     html2canvas(voucherDiv, renderOptions).then(canvas => {
         hideEls.forEach(el => el.style.display = '');
         let imgData = canvas.toDataURL("image/png");
         
         let link = document.createElement("a");
-        link.download = `Rider_Slip_${new Date().toISOString().slice(0,10)}.png`;
+        // အသေဖြစ်နေတဲ့ နေရာမှာ အပေါ်က fileDate ကို ထည့်ပေးလိုက်တာပါ
+        link.download = `Rider_Slip_${fileDate}.png`;
         link.href = imgData; link.click();
         
         let container = document.getElementById("previewContainer");
@@ -894,6 +911,7 @@ function saveSlipImage() {
         container.scrollIntoView({ behavior: 'smooth' });
     });
 }
+
 
 function exportSystemData() {
     if(logs.length === 0 && shops.length === 0) return alert("သိမ်းဆည်းရန် ဒေတာမရှိသေးပါဗျာ။");
