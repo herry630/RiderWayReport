@@ -883,33 +883,59 @@ function renderSlip() {
     if(currentFilter === 'choice') {
         filterTitleText = `PERIOD: ${document.getElementById("filterFromDate").value} TO ${document.getElementById("filterToDate").value}`;
     }
+    
+    let currentRider = localStorage.getItem("rider_profile_name") || "Not Specified";
 
-    let html = `<div class="v-title">DELIVERY SLIP</div><div class="v-date">${filterTitleText}</div><table class="voucher-table"><thead><tr><th style="text-align:center;width:25px;">No</th><th style="text-align:left;">Date</th><th style="text-align:left;">Way</th><th style="text-align:right;">Order</th><th style="text-align:right;">စိုက်ငွေ</th><th style="text-align:right;">Deli</th>${isShowRiderShare ? `<th style="text-align:right;">Rider%</th>`:``}<th style="text-align:right;">ရရှိငွေ</th><th style="text-align:left;padding-left:4px;">Remark</th><th class="hide-on-capture" style="text-align:center;width:45px;color:#f59e0b;">Act</th></tr></thead><tbody>`;
+    let html = `
+        <div class="v-title">DELIVERY SLIP</div>
+        <div class="v-date">${filterTitleText}</div>
+        <div style="text-align: center; font-size: 12px; font-weight: bold; color: #2563eb; margin-bottom: 12px;">👤 Rider: ${currentRider}</div>
+        <table class="voucher-table">
+        <thead>
+            <tr>
+                <th style="text-align:center;width:25px;">No</th>
+                <th style="text-align:left;">Date</th>
+                <th style="text-align:left;">Way (Order No)</th>
+                <th style="text-align:right;">Order</th>
+                <th style="text-align:right;">စိုက်ငွေ</th>
+                <th style="text-align:right;">Deli</th>
+                ${isShowRiderShare ? `<th style="text-align:right;">Rider%</th>`:``}
+                <th style="text-align:right;">ရရှိငွေ</th>
+                <th style="text-align:left;padding-left:4px;">Remark</th>
+                <th class="hide-on-capture" style="text-align:center;width:45px;color:#f59e0b;">Act</th>
+            </tr>
+        </thead>
+        <tbody>
+    `;
 
-    // renderSlip() ထဲက html += `<tr>...` ဆိုပြီး စာကြောင်းပတ်ထားတဲ့ နေရာမှာ ရှာပြီး အစားထိုးရန်
-slipDisplayLogs.forEach((log, i) => {
-    // Order Number ရှိရင် ပြမယ်၊ မရှိရင် Blank ထားမယ်
-    let ordBadge = (log.orderNumber && log.orderNumber !== "-") ? `<span style="font-size:9px; background:#e2e8f0; padding:2px 4px; border-radius:4px; margin-right:4px; color:#475569;">${log.orderNumber}</span>` : "";
+    slipDisplayLogs.forEach((log, i) => {
+        // အော်ဒါနံပါတ်ရှိရင် ရှေ့မှာ # Auto ခံပေးပြီး ပြာလွင်လွင် Badge လေးနဲ့ ပြမှာပါ
+        let ordBadge = "";
+        if (log.orderNumber && log.orderNumber !== "-") {
+            // အကယ်၍ အစ်ကိုတို့က # ရိုက်ခဲ့ရင်လည်း ထပ်မံမထပ်ရအောင် စစ်ပြီးမှ # တပ်ပေးတာပါ
+            let cleanNum = log.orderNumber.startsWith('#') ? log.orderNumber : '#' + log.orderNumber;
+            ordBadge = `<span style="font-size:9px; background:#eff6ff; border:1px solid #bfdbfe; padding:1px 4px; border-radius:4px; margin-right:4px; color:#1e40af; font-weight:bold;">${cleanNum}</span>`;
+        }
 
-    html += `<tr>
-        <td style="text-align:center;color:#64748b;">${i+1}</td>
-        <td style="text-align:left;color:#64748b;">${log.date.substring(5)}</td>
-        <!-- နာမည်ရှေ့မှာ အော်ဒါနံပါတ် ကပ်ပြထားခြင်း -->
-        <td style="text-align:left;font-weight:500;">${ordBadge}${cleanShopName(log.from)}➔${log.to}</td>
-        <td style="text-align:right;">${log.orderValue.toLocaleString()}</td>
-        <td style="text-align:right;color:#ef4444;">${log.advancePay.toLocaleString()}</td>
-        <td style="text-align:right;">${log.delivFee.toLocaleString()}</td>
-        ${isShowRiderShare ? `<td style="text-align:right;color:#2563eb;">${log.riderShare.toLocaleString()}</td>`:``}
-        <td style="text-align:right;color:#10b981;font-weight:bold;">${log.receivedAmt.toLocaleString()}</td>
-        <td style="text-align:left;color:#64748b;font-style:italic;padding-left:4px;">${log.remark}</td>
-        <td class="hide-on-capture" style="text-align:center;"><button class="slip-remove-btn" onclick="removeRowFromSlip(${i})">ဖြုတ်</button></td>
-    </tr>`;
-    totalOrder += log.orderValue; totalAdvance += log.advancePay; totalDeli += log.delivFee; totalRiderShare += log.riderShare; totalReceived += log.receivedAmt;
-});
+        html += `<tr>
+            <td style="text-align:center;color:#64748b;">${i+1}</td>
+            <td style="text-align:left;color:#64748b;">${log.date.substring(5)}</td>
+            <td style="text-align:left;font-weight:500; display:flex; align-items:center;">${ordBadge}${cleanShopName(log.from)}➔${log.to}</td>
+            <td style="text-align:right;">${log.orderValue.toLocaleString()}</td>
+            <td style="text-align:right;color:#ef4444;">${log.advancePay.toLocaleString()}</td>
+            <td style="text-align:right;">${log.delivFee.toLocaleString()}</td>
+            ${isShowRiderShare ? `<td style="text-align:right;color:#2563eb;">${log.riderShare.toLocaleString()}</td>`:``}
+            <td style="text-align:right;color:#10b981;font-weight:bold;">${log.receivedAmt.toLocaleString()}</td>
+            <td style="text-align:left;color:#64748b;font-style:italic;padding-left:4px;">${log.remark}</td>
+            <td class="hide-on-capture" style="text-align:center;"><button class="slip-remove-btn" onclick="removeRowFromSlip(${i})">ဖြုတ်</button></td>
+        </tr>`;
+        totalOrder += log.orderValue; totalAdvance += log.advancePay; totalDeli += log.delivFee; totalRiderShare += log.riderShare; totalReceived += log.receivedAmt;
+    });
 
     html += `</tbody><tfoot><tr><td colspan="3" style="text-align:center;">TOTAL (${slipDisplayLogs.length} Ways)</td><td style="text-align:right;">${totalOrder.toLocaleString()}</td><td style="text-align:right;color:#ef4444;">${totalAdvance.toLocaleString()}</td><td style="text-align:right;">${totalDeli.toLocaleString()}</td>${isShowRiderShare ? `<td style="text-align:right;color:#2563eb;">${totalRiderShare.toLocaleString()}</td>`:``}<td style="text-align:right;color:#10b981;font-weight:900;">${totalReceived.toLocaleString()}</td><td></td><td class="hide-on-capture"></td></tr></tfoot></table>`;
     voucher.innerHTML = html;
 }
+
 
 function removeRowFromSlip(index) { slipDisplayLogs.splice(index, 1); renderSlip(); }
 
