@@ -729,71 +729,110 @@ function filterData() {
 }
 
 function addLog() {
-    let date = document.getElementById("date").value;
-    let paymentType = document.getElementById("paymentType").value;
-    let from = cleanShopName(document.getElementById("fromShopInput").value.trim() || "-");
-    let to = document.getElementById("to").value.trim() || "-";
-    let orderValue = Number(document.getElementById("orderValue").value) || 0;
-    let advancePay = Number(document.getElementById("advancePay").value) || 0;
-    let delivFee = Number(document.getElementById("delivFee").value) || 0;
-    let feePercent = Number(document.getElementById("feePercent").value) || 0;
-    let receivedAmt = Number(document.getElementById("receivedAmt").value) || 0;
-    let remark = document.getElementById("remark").value.trim() || "-";
+    // Input Box တွေရှိမရှိ သေချာအောင် Element စစ်ပြီး တန်ဖိုးယူသည်
+    let dateEl = document.getElementById("date");
+    let orderNumEl = document.getElementById("orderNumber");
+    let fromShopEl = document.getElementById("fromShopInput");
+    let toEl = document.getElementById("to");
+    let orderValEl = document.getElementById("orderValue");
+    let advPayEl = document.getElementById("advancePay");
+    let delivFeeEl = document.getElementById("delivFee");
+    let feePerEl = document.getElementById("feePercent");
+    let recAmtEl = document.getElementById("receivedAmt");
+    let remarkEl = document.getElementById("remark");
+    let payTypeEl = document.getElementById("paymentType");
+
+    let date = dateEl ? dateEl.value : new Date().toLocaleDateString('sv-SE');
+    let paymentType = payTypeEl ? payTypeEl.value : "cash";
+    let from = fromShopEl ? cleanShopName(fromShopEl.value.trim() || "-") : "-";
+    let to = toEl ? toEl.value.trim() || "-" : "-";
+    let orderValue = orderValEl ? (Number(orderValEl.value) || 0) : 0;
+    let advancePay = advPayEl ? (Number(advPayEl.value) || 0) : 0;
+    let delivFee = delivFeeEl ? (Number(delivFeeEl.value) || 0) : 0;
+    let feePercent = feePerEl ? (Number(feePerEl.value) || 0) : 0;
+    let receivedAmt = recAmtEl ? (Number(recAmtEl.value) || 0) : 0;
+    let remark = remarkEl ? remarkEl.value.trim() || "-" : "-";
     
-    // Order Number ယူရန် အသစ်တိုးခြင်း
-    let orderNumber = document.getElementById("orderNumber").value.trim() || "-";
+    // Order Number တန်ဖိုးကို သေချာပေါက် ရအောင်ယူခြင်း
+    let orderNumber = orderNumEl ? orderNumEl.value.trim() : "";
+    if(!orderNumber) orderNumber = "-"; 
+
     let riderName = localStorage.getItem("rider_profile_name") || "Unknown Rider";
 
+    // ဒေတာအသစ်ထဲကို ဆွဲထည့်ခြင်း
     logs.push({
-        date: date, paymentType: paymentType, from: from, to: to, orderValue: orderValue,
-        advancePay: advancePay, delivFee: delivFee, feePercent: feePercent,
-        riderShare: (delivFee * feePercent) / 100, receivedAmt: receivedAmt, remark: remark,
+        date: date, 
+        paymentType: paymentType, 
+        from: from, 
+        to: to, 
+        orderValue: orderValue,
+        advancePay: advancePay, 
+        delivFee: delivFee, 
+        feePercent: feePercent,
+        riderShare: (delivFee * feePercent) / 100, 
+        receivedAmt: receivedAmt, 
+        remark: remark,
         riderName: riderName,
-        orderNumber: orderNumber // <-- အော်ဒါနံပါတ် သိမ်းဆည်းခြင်း
+        orderNumber: orderNumber // <-- ဒေတာထဲ သေချာပေါက် ထည့်လိုက်ပြီ
     });
 
-    document.getElementById("fromShopInput").value = "";
-    document.getElementById("to").value = "";
-    document.getElementById("orderValue").value = "0";
-    document.getElementById("advancePay").value = "0";
-    document.getElementById("delivFee").value = "0";
-    document.getElementById("receivedAmt").value = "0";
-    document.getElementById("remark").value = "";
-    
-    // Input Box ပြန်ရှင်းပေးခြင်း
-    document.getElementById("orderNumber").value = "";
+    // Input Box များကို ပြန်ရှင်းထုတ်ခြင်း
+    if(fromShopEl) fromShopEl.value = "";
+    if(toEl) toEl.value = "";
+    if(orderValEl) orderValEl.value = "0";
+    if(advPayEl) advPayEl.value = "0";
+    if(delivFeeEl) delivFeeEl.value = "0";
+    if(recAmtEl) recAmtEl.value = "0";
+    if(remarkEl) remarkEl.value = "";
+    if(orderNumEl) orderNumEl.value = ""; // Order Number ကွက်လပ် ပြန်လုပ်ပေးခြင်း
 
     localStorage.setItem("rider_logs", JSON.stringify(logs));
+    
+    // ဇယားကို ချက်ချင်း Update ပြန်လုပ်ခိုင်းခြင်း
     renderDailyLogs();
 }
 
 
 
+
 function renderDailyLogs() {
-    let tbody = document.getElementById("logTableBody");
-    let emptyText = document.getElementById("emptyText");
-    tbody.innerHTML = "";
+    let logTableBody = document.getElementById("logTableBody");
+    if(!logTableBody) return;
+    logTableBody.innerHTML = "";
 
     let selectedDate = document.getElementById("date").value;
+    // ရွေးထားတဲ့ရက်နဲ့ တိုက်ဆိုင်တဲ့ ဒေတာတွေကို စစ်ထုတ်သည်
     let dailyLogs = logs.filter(log => log.date === selectedDate);
 
-    if(dailyLogs.length === 0) { emptyText.style.display = "block"; return; }
-    emptyText.style.display = "none";
+    if(dailyLogs.length === 0) {
+        logTableBody.innerHTML = `<tr><td colspan="11" style="text-align:center; color:#64748b; padding:12px;">ဒီနေ့အတွက် စာရင်းမှတ်တမ်း မရှိသေးပါဗျာ။</td></tr>`;
+        return;
+    }
 
-    dailyLogs.forEach((log) => {
+    dailyLogs.forEach((log, index) => {
+        // မူလ logs array ထဲက index အစစ်ကို ရှာခြင်း (ဖျက်တဲ့အခါ မှန်အောင်လို့ပါ)
         let originalIndex = logs.findIndex(l => l === log);
+        
+        // Order No ရှိရင် ပြမယ်၊ မရှိရင် - ပြမယ်
+        let ordNum = (log.orderNumber && log.orderNumber !== "-") ? log.orderNumber : "-";
+
         let tr = document.createElement("tr");
         tr.innerHTML = `
-            <td style="text-align:center; color:#94a3b8; font-weight:bold;">${tbody.children.length + 1}</td>
-            <td><b>${cleanShopName(log.from)} ➔ ${log.to}</b></td>
+            <td style="text-align:center;">${index + 1}</td>
+            <td style="color:#1e40af; font-weight:bold; text-align:center;">${ordNum}</td> <!-- အော်ဒါနံပါတ် ကော်လံပြသခြင်း -->
+            <td>${cleanShopName(log.from)}</td>
+            <td>${log.to}</td>
             <td style="text-align:right;">${log.orderValue.toLocaleString()}</td>
-            <td style="text-align:right; color:#ef4444;">${log.advancePay.toLocaleString()}</td>
+            <td style="text-align:right; color:#dc2626;">${log.advancePay.toLocaleString()}</td>
             <td style="text-align:right;">${log.delivFee.toLocaleString()}</td>
+            <td style="text-align:right; color:#2563eb;">${log.riderShare.toLocaleString()}</td>
             <td style="text-align:right; color:#10b981; font-weight:bold;">${log.receivedAmt.toLocaleString()}</td>
-            <td style="color:#64748b; font-style:italic;">${log.remark}</td>
-            <td style="text-align:center;"><button class="delete-btn" onclick="deleteItemFromDaily(${originalIndex})">×</button></td>
+            <td>${log.remark}</td>
+            <td style="text-align:center;">
+                <button onclick="deleteLog(${originalIndex})" style="background:#ef4444; color:white; border:none; padding:2px 6px; border-radius:4px; font-size:11px; cursor:pointer;">ဖျက်</button>
+            </td>
         `;
-        tbody.appendChild(tr);
+        logTableBody.appendChild(tr);
     });
 }
 
