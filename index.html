@@ -355,14 +355,13 @@ button.primary-btn:active { transform: scale(0.99); }
 </head>
 
 <body>
-<!-- Tabs အပေါ်မှာ ဒါလေးပဲ အစားထိုး ထည့်ပေးရပါမယ် -->
 <div style="display: flex; justify-content: flex-end; margin-bottom: 8px; padding-right: 4px;">
     <button onclick="toggleLoginModal()" id="riderStatusBtn" style="background: #e2e8f0; color: #475569; border: 1px solid #cbd5e1; padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 4px;">
         👤 Rider သတ်မှတ်ရန်
     </button>
 </div>
 
-<!-- နာမည်ရိုက်ရန် Popup Box (ပုံမှန်အချိန်တွင် ပုန်းနေမည်) -->
+<!-- နာမည်ရိုက်ရန် Popup Box -->
 <div id="loginModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 9999; align-items: center; justify-content: center; padding: 16px;">
     <div class="card" style="width: 100%; max-width: 340px; margin-bottom: 0; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
         <h3 style="text-align: left; font-size: 14px; margin-top: 0;">👤 Rider Profile သတ်မှတ်ရန်</h3>
@@ -375,7 +374,6 @@ button.primary-btn:active { transform: scale(0.99); }
         </div>
     </div>
 </div>
-
 
 <div class="container">
 
@@ -398,9 +396,9 @@ button.primary-btn:active { transform: scale(0.99); }
                         <input type="date" id="date" onchange="renderDailyLogs()">
                     </div>
                     <div>
-        <label>Order Number (အော်ဒါနံပါတ်)</label>
-        <input type="text" id="orderNumber" placeholder="ဥပမာ - #1024" onfocus="this.select()">
-    </div>
+                        <label>Order Number (အော်ဒါနံပါတ်)</label>
+                        <input type="text" id="orderNumber" placeholder="ဥပမာ - #1024" onfocus="this.select()">
+                    </div>
                     <div>
                         <label>ရှင်းမည့်ပုံစံ (Auto ပြောင်းပါသည်)</label>
                         <select id="paymentType">
@@ -466,10 +464,13 @@ button.primary-btn:active { transform: scale(0.99); }
                         <thead>
                             <tr>
                                 <th style="text-align: center; width: 30px;">No</th>
-                                <th>From ➔ To</th>
+                                <th style="text-align: center; width: 70px;">Order No</th>
+                                <th>From</th>
+                                <th>To</th>
                                 <th style="text-align: right;">Order</th>
                                 <th style="text-align: right;">စိုက်ငွေ</th>
                                 <th style="text-align: right;">Deli</th>
+                                <th style="text-align: right;">Rider %</th>
                                 <th style="text-align: right;">ရရှိငွေ</th>
                                 <th>Remark</th>
                                 <th style="text-align: center; width: 40px;">X</th>
@@ -477,7 +478,7 @@ button.primary-btn:active { transform: scale(0.99); }
                         </thead>
                         <tbody id="logTableBody"></tbody>
                     </table>
-                    <p id="emptyText" style="text-align:center; color:#94a3b8; font-size:12px; padding: 12px 0; margin:0;">ယနေ့စာရင်း မရှိသေးပါ။</p>
+                    <p id="emptyText" style="text-align:center; color:#94a3b8; font-size:12px; padding: 12px 0; margin:0; display:none;">ယနေ့စာရင်း မရှိသေးပါ။</p>
                 </div>
             </div>
         </div>
@@ -625,8 +626,7 @@ let currentShopFilter = 'all';
 let filteredLogsGlobal = []; 
 let slipDisplayLogs = [];    
 
-// --- ဒီစာကြောင်း ၃ ကြောင်းနေရာမှာ အောက်ကအတိုင်း အစားထိုးပါ ---
-const todayStr = new Date().toLocaleDateString('sv-SE'); // YYYY-MM-DD ပုံစံ Auto ထွက်စေရန်
+const todayStr = new Date().toLocaleDateString('sv-SE'); 
 
 document.getElementById("date").value = todayStr;
 document.getElementById("filterFromDate").value = todayStr;
@@ -724,12 +724,11 @@ function filterData() {
         tOrder += log.orderValue; tAdvance += log.advancePay; tDeli += log.delivFee; tReceived += log.receivedAmt;
     });
 
-     AmayaFoot = `<tr><td colspan="2" style="text-align:center;">TOTAL</td><td style="text-align:right;">${tOrder.toLocaleString()}</td><td style="text-align:right; color:#ef4444;">${tAdvance.toLocaleString()}</td><td style="text-align:right;">${tDeli.toLocaleString()}</td><td style="text-align:right; color:#10b981;">${tReceived.toLocaleString()}</td><td colspan="2"></td></tr>`;
+    let AmayaFoot = `<tr><td colspan="2" style="text-align:center;">TOTAL</td><td style="text-align:right;">${tOrder.toLocaleString()}</td><td style="text-align:right; color:#ef4444;">${tAdvance.toLocaleString()}</td><td style="text-align:right;">${tDeli.toLocaleString()}</td><td style="text-align:right; color:#10b981;">${tReceived.toLocaleString()}</td><td colspan="2"></td></tr>`;
     tfoot.innerHTML = AmayaFoot;
 }
 
 function addLog() {
-    // Input Box တွေရှိမရှိ သေချာအောင် Element စစ်ပြီး တန်ဖိုးယူသည်
     let dateEl = document.getElementById("date");
     let orderNumEl = document.getElementById("orderNumber");
     let fromShopEl = document.getElementById("fromShopInput");
@@ -753,13 +752,11 @@ function addLog() {
     let receivedAmt = recAmtEl ? (Number(recAmtEl.value) || 0) : 0;
     let remark = remarkEl ? remarkEl.value.trim() || "-" : "-";
     
-    // Order Number တန်ဖိုးကို သေချာပေါက် ရအောင်ယူခြင်း
     let orderNumber = orderNumEl ? orderNumEl.value.trim() : "";
     if(!orderNumber) orderNumber = "-"; 
 
     let riderName = localStorage.getItem("rider_profile_name") || "Unknown Rider";
 
-    // ဒေတာအသစ်ထဲကို ဆွဲထည့်ခြင်း
     logs.push({
         date: date, 
         paymentType: paymentType, 
@@ -773,10 +770,9 @@ function addLog() {
         receivedAmt: receivedAmt, 
         remark: remark,
         riderName: riderName,
-        orderNumber: orderNumber // <-- ဒေတာထဲ သေချာပေါက် ထည့်လိုက်ပြီ
+        orderNumber: orderNumber 
     });
 
-    // Input Box များကို ပြန်ရှင်းထုတ်ခြင်း
     if(fromShopEl) fromShopEl.value = "";
     if(toEl) toEl.value = "";
     if(orderValEl) orderValEl.value = "0";
@@ -784,42 +780,36 @@ function addLog() {
     if(delivFeeEl) delivFeeEl.value = "0";
     if(recAmtEl) recAmtEl.value = "0";
     if(remarkEl) remarkEl.value = "";
-    if(orderNumEl) orderNumEl.value = ""; // Order Number ကွက်လပ် ပြန်လုပ်ပေးခြင်း
+    if(orderNumEl) orderNumEl.value = ""; 
 
     localStorage.setItem("rider_logs", JSON.stringify(logs));
-    
-    // ဇယားကို ချက်ချင်း Update ပြန်လုပ်ခိုင်းခြင်း
     renderDailyLogs();
 }
 
-
-
-
 function renderDailyLogs() {
     let logTableBody = document.getElementById("logTableBody");
+    let emptyText = document.getElementById("emptyText");
     if(!logTableBody) return;
     logTableBody.innerHTML = "";
 
     let selectedDate = document.getElementById("date").value;
-    // ရွေးထားတဲ့ရက်နဲ့ တိုက်ဆိုင်တဲ့ ဒေတာတွေကို စစ်ထုတ်သည်
     let dailyLogs = logs.filter(log => log.date === selectedDate);
 
     if(dailyLogs.length === 0) {
+        emptyText.style.display = "block";
         logTableBody.innerHTML = `<tr><td colspan="11" style="text-align:center; color:#64748b; padding:12px;">ဒီနေ့အတွက် စာရင်းမှတ်တမ်း မရှိသေးပါဗျာ။</td></tr>`;
         return;
     }
+    emptyText.style.display = "none";
 
     dailyLogs.forEach((log, index) => {
-        // မူလ logs array ထဲက index အစစ်ကို ရှာခြင်း (ဖျက်တဲ့အခါ မှန်အောင်လို့ပါ)
         let originalIndex = logs.findIndex(l => l === log);
-        
-        // Order No ရှိရင် ပြမယ်၊ မရှိရင် - ပြမယ်
         let ordNum = (log.orderNumber && log.orderNumber !== "-") ? log.orderNumber : "-";
 
         let tr = document.createElement("tr");
         tr.innerHTML = `
             <td style="text-align:center;">${index + 1}</td>
-            <td style="color:#1e40af; font-weight:bold; text-align:center;">${ordNum}</td> <!-- အော်ဒါနံပါတ် ကော်လံပြသခြင်း -->
+            <td style="color:#1e40af; font-weight:bold; text-align:center;">${ordNum}</td>
             <td>${cleanShopName(log.from)}</td>
             <td>${log.to}</td>
             <td style="text-align:right;">${log.orderValue.toLocaleString()}</td>
@@ -829,7 +819,7 @@ function renderDailyLogs() {
             <td style="text-align:right; color:#10b981; font-weight:bold;">${log.receivedAmt.toLocaleString()}</td>
             <td>${log.remark}</td>
             <td style="text-align:center;">
-                <button onclick="deleteLog(${originalIndex})" style="background:#ef4444; color:white; border:none; padding:2px 6px; border-radius:4px; font-size:11px; cursor:pointer;">ဖျက်</button>
+                <button onclick="deleteItemFromDaily(${originalIndex})" style="background:#ef4444; color:white; border:none; padding:2px 6px; border-radius:4px; font-size:11px; cursor:pointer;">ဖျက်</button>
             </td>
         `;
         logTableBody.appendChild(tr);
@@ -839,6 +829,7 @@ function renderDailyLogs() {
 function renderShops() {
     let datalist = document.getElementById("shopDatalist");
     let badgesArea = document.getElementById("shopBadgesArea");
+    if(!datalist || !badgesArea) return;
     datalist.innerHTML = ""; badgesArea.innerHTML = "";
     
     document.getElementById("cnt-all").innerText = shops.length;
@@ -948,10 +939,8 @@ function renderSlip() {
     `;
 
     slipDisplayLogs.forEach((log, i) => {
-        // အော်ဒါနံပါတ်ရှိရင် ရှေ့မှာ # Auto ခံပေးပြီး ပြာလွင်လွင် Badge လေးနဲ့ ပြမှာပါ
         let ordBadge = "";
         if (log.orderNumber && log.orderNumber !== "-") {
-            // အကယ်၍ အစ်ကိုတို့က # ရိုက်ခဲ့ရင်လည်း ထပ်မံမထပ်ရအောင် စစ်ပြီးမှ # တပ်ပေးတာပါ
             let cleanNum = log.orderNumber.startsWith('#') ? log.orderNumber : '#' + log.orderNumber;
             ordBadge = `<span style="font-size:9px; background:#eff6ff; border:1px solid #bfdbfe; padding:1px 4px; border-radius:4px; margin-right:4px; color:#1e40af; font-weight:bold;">${cleanNum}</span>`;
         }
@@ -975,17 +964,15 @@ function renderSlip() {
     voucher.innerHTML = html;
 }
 
-
 function removeRowFromSlip(index) { slipDisplayLogs.splice(index, 1); renderSlip(); }
 
 function saveSlipImage() {
     let voucherDiv = document.getElementById("voucher");
-    if(slipDisplayLogs.length === 0 || voucherDiv.innerText.includes("တွ6က်ချက်ရန်")) return alert("ထုတ်ယူရန် စလစ်မရှိသေးပါဗျာ။");
+    if(slipDisplayLogs.length === 0 || voucherDiv.innerText.includes("တွက်ချက်ရန်")) return alert("ထုတ်ယူရန် စလစ်မရှိသေးပါဗျာ။");
     
     let hideEls = voucherDiv.querySelectorAll('.hide-on-capture');
     hideEls.forEach(el => el.style.display = 'none');
 
-    // Canvas configuration optimized for handling flexible screen widths offline
     let renderOptions = { scale: 2, backgroundColor: "#ffffff", useCORS: true, logging: false };
     
     if (typeof html2canvas === 'undefined') {
@@ -994,28 +981,22 @@ function saveSlipImage() {
         return;
     }
 
-    // --- ဖိုင်နာမည်အတွက် ရက်စွဲကို Dynamic ယူသည့်အပိုင်း ---
     let fileDate = "";
     if (currentFilter === 'daily') {
-        // Daily ဆိုရင် Date Input ထဲက ရက်စွဲကို ယူမယ်
         fileDate = document.getElementById("date").value;
     } else if (currentFilter === 'choice') {
-        // Choice (ရက်စွဲရွေးရန်) ဆိုရင် From-To ရက်စွဲကို ပေါင်းပြီး ပြပေးမယ်
         let fromD = document.getElementById("filterFromDate").value;
         let toD = document.getElementById("filterToDate").value;
         fileDate = `${fromD}_to_${toD}`;
     } else {
-        // Weekly သို့မဟုတ် Monthly ဆိုရင် filter အမျိုးအစားအမည်ကို ထည့်ပေးမယ်
         fileDate = currentFilter + "_" + new Date().toLocaleDateString('sv-SE');
     }
-    // ---------------------------------------------
 
     html2canvas(voucherDiv, renderOptions).then(canvas => {
         hideEls.forEach(el => el.style.display = '');
         let imgData = canvas.toDataURL("image/png");
         
         let link = document.createElement("a");
-        // အသေဖြစ်နေတဲ့ နေရာမှာ အပေါ်က fileDate ကို ထည့်ပေးလိုက်တာပါ
         link.download = `Rider_Slip_${fileDate}.png`;
         link.href = imgData; link.click();
         
@@ -1028,7 +1009,6 @@ function saveSlipImage() {
         container.scrollIntoView({ behavior: 'smooth' });
     });
 }
-
 
 function exportSystemData() {
     if(logs.length === 0 && shops.length === 0) return alert("သိမ်းဆည်းရန် ဒေတာမရှိသေးပါဗျာ။");
@@ -1068,21 +1048,19 @@ function importSystemData(event) {
     };
     reader.readAsText(file); event.target.value = ""; 
 }
-// Popup ကို ပိတ်/ဖွင့် လုပ်ပေးမည့် Function
+
 function toggleLoginModal() {
     const modal = document.getElementById("loginModal");
     modal.style.display = (modal.style.display === "none" || modal.style.display === "") ? "flex" : "none";
 }
 
-// Profile ရှိမရှိ စစ်ဆေးပြီး ခလုတ်စာသားကို Update လုပ်ပေးမည့် Function
 function checkRiderProfile() {
     let savedName = localStorage.getItem("rider_profile_name");
     let btnEl = document.getElementById("riderStatusBtn");
     let inputEl = document.getElementById("riderNameInput");
     
     if (savedName) {
-        inputEl.value = savedName;
-        // နာမည်ရှိရင် ခလုတ်လေးက အစိမ်းရောင်ပြောင်းပြီး Rider နာမည်လေး ပြနေပါလိမ့်မယ်
+        if(inputEl) inputEl.value = savedName;
         btnEl.innerHTML = `🟢 Rider: <b>${savedName}</b>`;
         btnEl.style.background = "#d1fae5";
         btnEl.style.color = "#065f46";
@@ -1095,72 +1073,19 @@ function checkRiderProfile() {
     }
 }
 
-// မူလ saveRiderProfile ကိုလည်း Popup ပိတ်သွားအောင် နည်းနည်းမွမ်းမံခြင်း
 function saveRiderProfile() {
     let nameInput = document.getElementById("riderNameInput").value.trim();
     if (!nameInput) return alert("Rider နာမည် ရိုက်ထည့်ပေးပါဦးဗျာ။");
     
     localStorage.setItem("rider_profile_name", nameInput);
     checkRiderProfile();
-    toggleLoginModal(); // နာမည်သိမ်းပြီးရင် Popup ကို Auto ပိတ်ပေးတာပါ
+    toggleLoginModal(); 
 }
 
-
-// မူလ renderSlip Function ကို Rider Name ပြသနိုင်အောင် မွမ်းမံခြင်း
-// အစ်ကို့ရဲ့ renderSlip() နေရာမှာ ဒါလေး အစားထိုးပေးပါ (Title အောက်မှာ Rider Name ပေါ်လာမှာပါ)
-function renderSlip() {
-    let voucher = document.getElementById("voucher");
-    let isShowRiderShare = document.getElementById("showRiderShareCheck").checked; 
-    if(slipDisplayLogs.length === 0) {
-        voucher.innerHTML = '<p style="text-align:center; color:#dc2626; font-weight:bold; padding:16px 0;">စလစ်ထုတ်ရန် စာရင်းမှတ်တမ်း မရှိသေးပါဗျာ!</p>'; return;
-    }
-
-    let totalOrder = 0, totalAdvance = 0, totalDeli = 0, totalRiderShare = 0, totalReceived = 0;
-    let filterTitleText = currentFilter.toUpperCase() + " REPORT";
-    if(currentFilter === 'choice') {
-        filterTitleText = `PERIOD: ${document.getElementById("filterFromDate").value} TO ${document.getElementById("filterToDate").value}`;
-    }
-    
-    // စလစ်ထဲမှာ လက်ရှိ Rider Name ကို ပြရန် ယူခြင်း
-    let currentRider = localStorage.getItem("rider_profile_name") || "Not Specified";
-
-    // --- စလစ်ရဲ့ ခေါင်းစဉ်ပိုင်းမှာ Rider Name ကိုပါ ထည့်သွင်းလိုက်ပါတယ် ---
-    let html = `
-        <div class="v-title">DELIVERY SLIP</div>
-        <div class="v-date">${filterTitleText}</div>
-        <div style="text-align: center; font-size: 12px; font-weight: bold; color: #2563eb; margin-bottom: 12px;">👤 Rider: ${currentRider}</div>
-        <table class="voucher-table">
-        <thead>
-            <tr>
-                <th style="text-align:center;width:25px;">No</th>
-                <th style="text-align:left;">Date</th>
-                <th style="text-align:left;">Way</th>
-                <th style="text-align:right;">Order</th>
-                <th style="text-align:right;">စိုက်ငွေ</th>
-                <th style="text-align:right;">Deli</th>
-                ${isShowRiderShare ? `<th style="text-align:right;">Rider%</th>`:``}
-                <th style="text-align:right;">ရရှိငွေ</th>
-                <th style="text-align:left;padding-left:4px;">Remark</th>
-                <th class="hide-on-capture" style="text-align:center;width:45px;color:#f59e0b;">Act</th>
-            </tr>
-        </thead>
-        <tbody>
-    `;
-
-    slipDisplayLogs.forEach((log, i) => {
-        html += `<tr><td style="text-align:center;color:#64748b;">${i+1}</td><td style="text-align:left;color:#64748b;">${log.date.substring(5)}</td><td style="text-align:left;font-weight:500;">${cleanShopName(log.from)}➔${log.to}</td><td style="text-align:right;">${log.orderValue.toLocaleString()}</td><td style="text-align:right;color:#ef4444;">${log.advancePay.toLocaleString()}</td><td style="text-align:right;">${log.delivFee.toLocaleString()}</td>${isShowRiderShare ? `<td style="text-align:right;color:#2563eb;">${log.riderShare.toLocaleString()}</td>`:``}<td style="text-align:right;color:#10b981;font-weight:bold;">${log.receivedAmt.toLocaleString()}</td><td style="text-align:left;color:#64748b;font-style:italic;padding-left:4px;">${log.remark}</td><td class="hide-on-capture" style="text-align:center;"><button class="slip-remove-btn" onclick="removeRowFromSlip(${i})">ဖြုတ်</button></td></tr>`;
-        totalOrder += log.orderValue; totalAdvance += log.advancePay; totalDeli += log.delivFee; totalRiderShare += log.riderShare; totalReceived += log.receivedAmt;
-    });
-
-    html += `</tbody><tfoot><tr><td colspan="3" style="text-align:center;">TOTAL (${slipDisplayLogs.length} Ways)</td><td style="text-align:right;">${totalOrder.toLocaleString()}</td><td style="text-align:right;color:#ef4444;">${totalAdvance.toLocaleString()}</td><td style="text-align:right;">${totalDeli.toLocaleString()}</td>${isShowRiderShare ? `<td style="text-align:right;color:#2563eb;">${totalRiderShare.toLocaleString()}</td>`:``}<td style="text-align:right;color:#10b981;font-weight:900;">${totalReceived.toLocaleString()}</td><td></td><td class="hide-on-capture"></td></tr></tfoot></table>`;
-    voucher.innerHTML = html;
-}
-
-// ကုဒ်ရဲ့ အောက်ဆုံးနားက renderShops(); အောက်ခြေမှာ ဒါလေး ထည့်ပေးပါ
+// Initial Calls
 checkRiderProfile();
 renderDailyLogs();
 renderShops();
 </script>
-
 </body>
 </html>
